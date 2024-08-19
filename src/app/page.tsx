@@ -1,113 +1,134 @@
+"use client";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const initialCards: Card[] = [
+    { id: 1, value: "blomst.jpg", isFlipped: false, isMatched: false },
+    { id: 2, value: "elefant.jpg", isFlipped: false, isMatched: false },
+    { id: 3, value: "hund.jpg", isFlipped: false, isMatched: false },
+    { id: 4, value: "is.jpg", isFlipped: false, isMatched: false },
+    { id: 5, value: "jente.jpg", isFlipped: false, isMatched: false },
+    { id: 6, value: "menneske.jpg", isFlipped: false, isMatched: false },
+    { id: 7, value: "ski.jpg", isFlipped: false, isMatched: false },
+    { id: 8, value: "sol.jpg", isFlipped: false, isMatched: false },
+    { id: 9, value: "strand.jpg", isFlipped: false, isMatched: false },
+    { id: 10, value: "tboks.jpg", isFlipped: false, isMatched: false },
+  ];
+
+  const [cards, setCards] = useState<Card[]>(
+    shuffleArray([...initialCards, ...initialCards])
+  );
+  const [flippedCards, setFlippedCards] = useState<Card[]>([]);
+  const [matchedCount, setMatchedCount] = useState<number>(0);
+  const [tries, setTries] = useState<number>(0);
+
+  // Function to shuffle cards
+  function shuffleArray(array: Card[]) {
+    return array.sort(() => Math.random() - 0.5);
+  }
+
+  const resetGame = () => {
+    setCards(shuffleArray([...initialCards, ...initialCards]));
+    setFlippedCards([]);
+    setMatchedCount(0);
+    setTries(0);
+  };
+
+  // Handle card click
+  const handleCardClick = (index: number) => {
+    if (flippedCards.length === 2 || cards[index].isFlipped) return;
+
+    const newFlippedCards = [...flippedCards, cards[index]];
+    const newCards = cards.map((card, i) =>
+      i === index ? { ...card, isFlipped: true } : card
+    );
+
+    setCards(newCards);
+    setFlippedCards(newFlippedCards);
+
+    if (newFlippedCards.length === 2) {
+      checkForMatch(newFlippedCards, newCards);
+    }
+  };
+
+  // Check for match
+  const checkForMatch = (flippedCards: Card[], cards: Card[]) => {
+    setTries(tries + 1);
+
+    if (flippedCards[0].value === flippedCards[1].value) {
+      const newCards = cards.map((card) =>
+        card.value === flippedCards[0].value
+          ? { ...card, isMatched: true }
+          : card
+      );
+
+      setMatchedCount(matchedCount + 1);
+      setTimeout(() => {
+        setCards(newCards);
+        setFlippedCards([]);
+      }, 1000);
+    } else {
+      setTimeout(() => {
+        setCards([
+          ...cards.map((card) => {
+            if (card.isMatched) return card;
+            return { ...card, isFlipped: false };
+          }),
+        ]);
+        setFlippedCards([]);
+      }, 1000);
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div>
+      <h1 className="text-center text-4xl pt-4 font-semibold">
+        Vebjørn og Sonjas fantastiske lottospill
+      </h1>
+      <div className="justify-center gap-10 items-center py-4 flex">
+        <div>
+          <h2>Poeng</h2>
+          <p className="text-3xl">{matchedCount}</p>
+        </div>
+        <div>
+          <h2>Forsøk</h2>
+          <p className="text-3xl">{tries}</p>
+        </div>
+        <div className="">
+          <button
+            className="bg-slate-200 text-black px-4 py-2 rounded-lg"
+            onClick={resetGame}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            Prøv på nytt
+          </button>
         </div>
       </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      {matchedCount === initialCards.length ? (
+        <div className="text-4xl text-pink-500 h-[300px] content-center text-center">
+          Gratulerer! Du vant!
+        </div>
+      ) : (
+        <div className="grid grid-cols-5 gap-2">
+          {cards.map((card, index) => (
+            <div
+              key={index}
+              className="relative rounded-lg bg-slate-200 flex justify-center items-center text-4xl cursor-pointer h-[200px] overflow-hidden"
+              onClick={() => handleCardClick(index)}
+            >
+              {card.isFlipped || card.isMatched ? (
+                <div className="h-full w-full">
+                  <Image alt="artwork" fill src={`/artwork/${card.value}`} />
+                </div>
+              ) : (
+                ""
+              )}
+              <div>{card.isFlipped || card.isMatched ? "" : "❓"}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
